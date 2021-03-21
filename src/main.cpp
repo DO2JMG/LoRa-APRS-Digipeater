@@ -22,7 +22,7 @@ void setup() {
 
   Serial.begin(LoRa_Serial_Baudrate);
 
-  String loRa_str_Bake = (String)LoRa_str_call + ">" + String(LoRa_str_Dest) + ",WIDE1-1,WIDE2-1:!" + (String)LoRa_str_Lat + (String)LoRa_str_Overlay + (String)LoRa_str_Lon + (String)LoRa_str_Symbol+(String)LoRa_str_Comment;
+  String loRa_str_Bake = (String)LoRa_str_call + ">" + String(LoRa_str_Dest) + ",WIDE1-1:!" + (String)LoRa_str_Lat + (String)LoRa_str_Overlay + (String)LoRa_str_Lon + (String)LoRa_str_Symbol+(String)LoRa_str_Comment;
   Serial.print(loRa_str_Bake);
   LoRa_send(loRa_str_Bake, 1);
   LoRa_display("Send Bake",0,20);
@@ -32,7 +32,7 @@ void loop() {
   if (millis() > l_Timer_Bake_Send + l_Timer_Bake ) {
     l_Timer_Bake = millis();
     
-    String loRa_str_Bake = (String)LoRa_str_call + ">" + String(LoRa_str_Dest) + ",WIDE1-1,WIDE2-1:!" + (String)LoRa_str_Lat + (String)LoRa_str_Overlay + (String)LoRa_str_Lon + (String)LoRa_str_Symbol+(String)LoRa_str_Comment;
+    String loRa_str_Bake = (String)LoRa_str_call + ">" + String(LoRa_str_Dest) + ",WIDE1-1:!" + (String)LoRa_str_Lat + (String)LoRa_str_Overlay + (String)LoRa_str_Lon + (String)LoRa_str_Symbol+(String)LoRa_str_Comment;
     Serial.print(loRa_str_Bake);
     LoRa_send(loRa_str_Bake, 1);
     LoRa_display("Send Bake",0,20);
