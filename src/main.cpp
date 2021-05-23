@@ -63,7 +63,7 @@ void loop() {
       int i_str_is_wide = strPath.indexOf("WIDE1-1");
       int i_str_is_dest = strDest.indexOf("-1");
 
-      if (i_str_repeated = -1) {
+      if (i_str_repeated == -1) {
         if (i_str_is_wide != -1 || i_str_is_dest != -1) {
           String str_Display_incomming = strSource + " repeated!";
           LoRa_display(str_Display_incomming,0,20);
