@@ -29,7 +29,7 @@
 #define LoRa_str_call "NOCALL"                        // Call for Digipeater
 #define LoRa_str_Lat "0000.00N"                       // Latitude
 #define LoRa_str_Lon "000000.00E"                      // Longitude
-#define LoRa_str_Symbol "#"                           // Symbol
+#define LoRa_str_Symbol "&"                           // Symbol
 #define LoRa_str_Overlay "L"                          // Overlay
 #define LoRa_str_Comment "LoRa Digipeater"            // Comment
 #define LoRa_str_Dest "APZAVR"                        // Destination Call
