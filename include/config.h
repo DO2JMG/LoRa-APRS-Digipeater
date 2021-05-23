@@ -13,14 +13,14 @@
 #define LoRa_TxPower 20
 
 // TTGO T-Beam Pin
-//#define LoRa_Oled_SDA 21                              // TTGO T-Beam Pin 21
-//#define LoRa_Oled_SCL 22                              // TTGO T-Beam Pin 22
-//#define LoRa_Oled_RST 16  
+#define LoRa_Oled_SDA 21                              // TTGO T-Beam Pin 21
+#define LoRa_Oled_SCL 22                              // TTGO T-Beam Pin 22
+#define LoRa_Oled_RST 16  
 
 // TTGO Heltec
-#define LoRa_Oled_SDA 4                               // TTGO T-Beam Pin 21
-#define LoRa_Oled_SCL 15                              // TTGO T-Beam Pin 22
-#define LoRa_Oled_RST 16                              // TTGO T-Beam Pin 16
+//#define LoRa_Oled_SDA 4                               // TTGO T-Beam Pin 21
+//#define LoRa_Oled_SCL 15                              // TTGO T-Beam Pin 22
+//#define LoRa_Oled_RST 16                              // TTGO T-Beam Pin 16
 
 
 #define Lora_Screen_Width 128 
