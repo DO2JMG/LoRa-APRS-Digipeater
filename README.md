@@ -5,5 +5,5 @@
 - TTGO T-Beam V0.7 (433MHz SX1278)
 - TTGO T-Beam V1 (433MHz SX1278)
 
-Only WIDE1-1 or APLT00-1 will digipeated.
+Only WIDE1-1 or Destinationcall with -1 will digipeated.
 
