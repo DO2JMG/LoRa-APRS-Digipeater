@@ -58,11 +58,11 @@ void loop() {
 
       int i_str_repeated = strPath.indexOf("*");
       int i_str_is_wide = strPath.indexOf("WIDE1-1");
-      
-      delay(150);
+      int i_str_is_dest = strPath.indexOf("APLT00-1");
+
       
       if (i_str_repeated = -1 ) {
-        if (i_str_is_wide != -1 ) {
+        if (i_str_is_wide != -1 || i_str_is_dest != -1) {
           String str_Display_incomming = strSource + " repeated!";
           LoRa_display(str_Display_incomming,0,20);
           LoRa_incomig_Data.replace("," + strPath,"," + (String)LoRa_str_call + "*");
