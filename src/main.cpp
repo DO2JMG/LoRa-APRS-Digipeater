@@ -23,7 +23,6 @@ void setup() {
   Serial.begin(LoRa_Serial_Baudrate);
 
   String loRa_str_Bake = (String)LoRa_str_call + ">" + String(LoRa_str_Dest) + ":!" + (String)LoRa_str_Lat + (String)LoRa_str_Overlay + (String)LoRa_str_Lon + (String)LoRa_str_Symbol+(String)LoRa_str_Comment;
-  Serial.print(loRa_str_Bake);
   LoRa_send(loRa_str_Bake, 1);
   LoRa_display("Send Bake",0,20);
 }
@@ -33,40 +32,42 @@ void loop() {
     l_Timer_Bake = millis();
     
     String loRa_str_Bake = (String)LoRa_str_call + ">" + String(LoRa_str_Dest) + ":!" + (String)LoRa_str_Lat + (String)LoRa_str_Overlay + (String)LoRa_str_Lon + (String)LoRa_str_Symbol+(String)LoRa_str_Comment;
-    Serial.print(loRa_str_Bake);
     LoRa_send(loRa_str_Bake, 1);
     LoRa_display("Send Bake",0,20);
   }
   
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
-
     LoRa_display("Received packet",0,20);
-    
+
     while (LoRa.available()) {
       LoRa_incomig_Data = LoRa.readString();
-      Serial.print(LoRa_incomig_Data);
-  
+
       int i_str_Call = LoRa_incomig_Data.indexOf('>');
       String strSource = LoRa_incomig_Data.substring(3, i_str_Call);
 
-      int i_str_Dest = LoRa_incomig_Data.indexOf(",");
-      String strDest = LoRa_incomig_Data.substring(i_str_Call+1, i_str_Dest);
-
       int i_str_Path = LoRa_incomig_Data.indexOf(":");
-      String strPath = LoRa_incomig_Data.substring(i_str_Dest+1, i_str_Path);
+      String strPath = LoRa_incomig_Data.substring(i_str_Call+1, i_str_Path);
+      String strDest = LoRa_incomig_Data.substring(i_str_Call+1, i_str_Path);
+      String strPaths = "";
+
+      int i_str_Paths = strPath.indexOf(",");
+      if (i_str_Paths != -1 ) {
+        strDest = "";
+        strDest = LoRa_incomig_Data.substring(i_str_Call+1, i_str_Call + 1 +  i_str_Paths);
+        strPaths = strPath.substring(i_str_Paths+1, strPath.length());
+        strPaths = "," + strPaths;
+      }
 
       int i_str_repeated = strPath.indexOf("*");
       int i_str_is_wide = strPath.indexOf("WIDE1-1");
-      int i_str_is_dest = strPath.indexOf("APLT00-1");
+      int i_str_is_dest = strDest.indexOf("-1");
 
-      
-      if (i_str_repeated = -1 ) {
+      if (i_str_repeated = -1) {
         if (i_str_is_wide != -1 || i_str_is_dest != -1) {
           String str_Display_incomming = strSource + " repeated!";
           LoRa_display(str_Display_incomming,0,20);
-          LoRa_incomig_Data.replace("," + strPath,"," + (String)LoRa_str_call + "*");
-          Serial.print(LoRa_incomig_Data);
+          LoRa_incomig_Data.replace(strPath, strDest + "," + (String)LoRa_str_call + "*" + strPaths);
           LoRa_send(LoRa_incomig_Data,0);
         }
       }
