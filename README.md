@@ -8,7 +8,9 @@
 - TTGO Lora32 v2.1
 - TTGO Lora32 v2
 
-Only WIDE1-1 or more and Destinationcall with -1 will digipeated.
+<b>Path that will digipeated</b><br>
+- WIDE1-1 or more
+- DST Call with -1
 
 <b>Require LoRa module pinout definitions and Display pinout in</b> <code>config.h</code>:
 
