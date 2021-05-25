@@ -12,7 +12,7 @@ Only WIDE1-1 or Destinationcall with -1 will digipeated.
 
 <b>Require LoRa module pinout definitions and Display pinout in</b> <code>config.h</code>:
 
-<u>LoRa Module</u>
+<u>LoRa Module</u><br>
 <code>#define LoRa_SCK 5</code><br>
 <code>#define LoRa_MISO 19</code><br>
 <code>#define LoRa_MOSI 27</code><br>
