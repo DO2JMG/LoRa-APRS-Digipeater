@@ -4,7 +4,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-String LoRa_incomig_Data;
+String LoRa_incoming_Data;
 
 Adafruit_SSD1306 display(Lora_Screen_Width, LoRa_Screen_Height, &Wire, LoRa_Oled_RST);
 
@@ -40,39 +40,170 @@ void loop() {
   if (packetSize) {
     LoRa_display("Received packet",0,20);
 
+    String LoRaHeader;
+    String sourceCall;
+    String destCall;
+    String message;
+    String digiPath;
+    String digis[8];
+
     while (LoRa.available()) {
-      LoRa_incomig_Data = LoRa.readString();
 
-      int i_str_Call = LoRa_incomig_Data.indexOf('>');
-      String strSource = LoRa_incomig_Data.substring(3, i_str_Call);
+      LoRa_incoming_Data = LoRa.readString();
 
-      int i_str_Path = LoRa_incomig_Data.indexOf(":");
-      String strPath = LoRa_incomig_Data.substring(i_str_Call+1, i_str_Path);
-      String strDest = LoRa_incomig_Data.substring(i_str_Call+1, i_str_Path);
-      String strPaths = "";
-
-      int i_str_Paths = strPath.indexOf(",");
-      if (i_str_Paths != -1 ) {
-        strDest = "";
-        strDest = LoRa_incomig_Data.substring(i_str_Call+1, i_str_Call + 1 +  i_str_Paths);
-        strPaths = strPath.substring(i_str_Paths+1, strPath.length());
-        strPaths = "," + strPaths;
+      if (LoRa_incoming_Data.length() < 5)
+        goto bad_packet;
+      int pos1, pos2;
+      LoRaHeader = LoRa_incoming_Data.substring(0, 3);
+      pos1 = LoRa_incoming_Data.indexOf('>');
+      if (pos1 < 5)
+        goto bad_packet;
+      sourceCall = LoRa_incoming_Data.substring(3, pos1);
+      pos2 = LoRa_incoming_Data.indexOf(':');
+      if (pos2 < pos1)
+        goto bad_packet;
+      destCall = LoRa_incoming_Data.substring(pos1 + 1, pos2);
+      message = LoRa_incoming_Data.substring(pos2 + 1);
+      digiPath = "";
+      pos2 = destCall.indexOf(',');
+      if (pos2 > 0) {
+        digiPath = destCall.substring(pos2 + 1);
+        destCall = destCall.substring(0, pos2);
       }
+      if (destCall == "")
+        goto bad_packet;
 
-      int i_str_repeated = strPath.indexOf("*");
-      int i_str_is_wide = strPath.indexOf("WIDE1-1");
-      int i_str_is_dest = strDest.indexOf("-1");
 
-      if (i_str_repeated == -1) {
-        if (i_str_is_wide != -1 || i_str_is_dest != -1) {
-          String str_Display_incomming = strSource + " repeated!";
-          LoRa_display(str_Display_incomming,0,20);
-          LoRa_incomig_Data.replace(strPath, strDest + "," + (String)LoRa_str_call + "*" + strPaths);
-          LoRa_send(LoRa_incomig_Data,0);
+      // In LORA we don't support digipeating more than one time -> If somewhere in the path the digipeated marker '*' appears, don't repeat.
+      if (digiPath.indexOf('*') != -1)
+        goto already_repeated;
+        
+      bool via_digi_found;
+      via_digi_found = false;
+      pos2 = destCall.indexOf('-');
+      if (pos2 > -1) {
+        // DST Call digipeating?
+        // DST-n>WIDEm is mutually exclusive
+        if (digiPath.startsWith("WIDE") || digiPath.indexOf(",WIDE") > -1)
+          goto bad_packet;
+        // v this makes ^ this obsolete. If digiPath contains a real digi call for digipeating (and it has no repeated flad
+        //                (but we well not repeat already repeated packets anywa..), it's also mutually exclusive to DST-Digipeating
+        if (!(digiPath == "" || digiPath == "NOGATE" || digiPath == "RFONLY"))
+          goto bad_packet;
+        int ssid = destCall.substring(pos2 + 1).toInt();
+        if (ssid < 1 || ssid > 7) {
+          // SSID 8-15: unsupported. < 1 and > 15 are invalid
+          goto bad_packet;
         }
+        // Decrement SSID; if SSID was -1, then remove "-1".
+        destCall = destCall.substring(0, pos2);
+        if (ssid > 1)
+          destCall = destCall + "-" + String(ssid - 1);
+        via_digi_found = true;
       }
+
+
+      int n_digis;
+      int call_start;
+      int call_end;
+      bool at_last_digi;
+      bool my_call_was_in_path;
+      n_digis = 0;
+      call_start = 0;
+      call_end = 0;
+      at_last_digi = false;
+      my_call_was_in_path = false;
+
+      while (true) {
+        String digi;
+        call_end = digiPath.indexOf(',', call_start);
+        if (call_end == -1) {
+          digi = digiPath.substring(call_start);
+          at_last_digi = true;
+        } else {
+          if (n_digis == 6)
+            goto max_digipeaters_reached;
+          digi = digiPath.substring(call_start, call_end);
+        }
+
+        if (digi.startsWith("WIDE")) {
+          // In LoRa, we repeat only once. Set WIDEn-m to WIDEn (-> cut off '-'), on every word "WIDEn" in the path
+          int ssid_pos;
+          if ((ssid_pos = digi.indexOf("-")) > -1)
+            digi = digi.substring(0, ssid_pos);
+          if (!via_digi_found)
+            digi = digi + "*";
+          via_digi_found = true;       
+        } else {
+          /* user specified a digipeater, i.e. ...>APRS,DL2BBB" or >APRS,DL2BBB,WIDE2-1, we must not repeat this. Except if our own call is addressed.
+           * Thanks to !via_digi_found status we know we are in the position of digiPath before the first WIDE digi.
+           */
+          if (digi == String(LoRa_str_call)) {
+            if (!via_digi_found) {
+              digi = digi + "*";
+              my_call_was_in_path = true;
+            }
+            via_digi_found = true;
+          } else {
+            if (!via_digi_found)
+              goto no_via_digi_found;
+          }
+        }
+
+        if (digi != "") {
+          digis[n_digis] = digi;
+          n_digis++;
+        }
+
+        if (at_last_digi)
+          break;
+          
+        call_start = call_end + 1;
+      }
+
+      if (!via_digi_found)
+        goto no_via_digi_found;
+
+      // Now, look for the first reference of wide* and insert our callsign just before
+      int i;
+      int my_digi_pos;
+      my_digi_pos = 0;
+      if (!my_call_was_in_path) {
+        for (i = n_digis-1; i >= 0; i--) {
+          if (digis[i].endsWith("*") || i == 0) {
+            my_digi_pos = i;
+            int j;
+            for (j = n_digis+1; j > i; j--)
+              digis[j] = digis[j-1];
+          }
+        }
+
+        // always add our repeater
+        digis[my_digi_pos] = String(LoRa_str_call) + "*";
+        n_digis++;
+      }
+
+      // rebuild digiPath
+      digiPath = "";
+      for (i = 0; i < n_digis; i++)
+          digiPath = digiPath + "," + digis[i];
+
+      LoRa_display(String(sourceCall + " repeated!"), 0, 20);
+      LoRa_incoming_Data = LoRaHeader + sourceCall + ">" + destCall + digiPath + ":" + message;
+      LoRa_send(LoRa_incoming_Data,0);
+
+bad_packet:
+      // ignore bad packet
+no_via_digi_found:
+      // no via digi found
+max_digipeaters_reached:
+      // max. 8 digipeaters are allowed
+already_repeated:
+      // already_repeated
+      ;
+
     }
-  } 
+  }
 }
 
 void LoRa_send(String LoRa_str_Data, int LoRa_i_Header) {
