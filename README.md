@@ -14,7 +14,7 @@ Only WIDE1-1 or Destinationcall with -1 will digipeated.
 
 <u>Lora</u>
 <code>
-#define LoRa_SCK 5<br>
+#define LoRa_SCK 5\n
 #define LoRa_MISO 19<br>
 #define LoRa_MOSI 27<br>
 #define LoRa_SS 18<br>
