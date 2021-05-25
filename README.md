@@ -12,6 +12,12 @@
 - WIDE1-1 or more
 - DST Call with -1
 
+<b>Path that will not digipeated</b><br>
+- Own Call
+- NOGATE
+- RFONLY
+- DST-Path an WIDE in one Path
+- 
 <b>Require LoRa module pinout definitions and Display pinout in</b> <code>config.h</code>:
 
 <u>LoRa Module</u><br>
