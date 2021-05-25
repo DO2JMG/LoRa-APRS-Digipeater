@@ -8,7 +8,7 @@
 - TTGO Lora32 v2.1
 - TTGO Lora32 v2
 
-Only WIDE1-1 or Destinationcall with -1 will digipeated.
+Only WIDE1-1 or more and Destinationcall with -1 will digipeated.
 
 <b>Require LoRa module pinout definitions and Display pinout in</b> <code>config.h</code>:
 
@@ -22,6 +22,7 @@ Only WIDE1-1 or Destinationcall with -1 will digipeated.
 <code>#define LoRa_DIO0 26</code><br>
 <br>
 <u>Display</u><br>
+<br>
 <code>#define LoRa_Oled_SDA 21</code><br>
 <code>#define LoRa_Oled_SCL 22</code><br>
 <code>#define LoRa_Oled_RST 16</code><br>
