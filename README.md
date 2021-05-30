@@ -16,7 +16,7 @@
 - Own Call
 - NOGATE
 - RFONLY
-- DST-Path an WIDE in one Path
+- DST-Path and WIDE in one Path
 
 <b>Require LoRa module pinout definitions and Display pinout in</b> <code>config.h</code>:
 
