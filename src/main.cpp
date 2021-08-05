@@ -11,6 +11,9 @@ Adafruit_SSD1306 display(Lora_Screen_Width, LoRa_Screen_Height, &Wire, LoRa_Oled
 long l_Timer_Bake = 0;
 long l_Timer_Bake_Send = ((1000*60)*LoRa_Timer_Bake);
 
+long l_Timer_Display = 0;
+long l_Timer_Display_off = ((1000*60)*Lora_Screen_Timeout);
+
 void LoRa_send(String LoRa_str_Data, int LoRa_i_Header);
 void LoRa_init_display();
 void LoRa_init();
@@ -35,11 +38,21 @@ void loop() {
     LoRa_send(loRa_str_Bake, 1);
     LoRa_display("Send Bake",0,20);
   }
+
+  if (millis() > l_Timer_Display_off + l_Timer_Display ) {
+    l_Timer_Display = millis();
+    display.dim(true);
+  }
   
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
-    LoRa_display("Received packet",0,20);
+    
 
+    
+    display.dim(false);
+    l_Timer_Display = millis();
+    LoRa_display("Received packet",0,20);
+    
     String LoRaHeader;
     String sourceCall;
     String destCall;
