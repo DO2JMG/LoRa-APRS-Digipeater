@@ -36,6 +36,8 @@ void loop() {
     
     String loRa_str_Bake = (String)LoRa_str_call + ">" + String(LoRa_str_Dest) + ":!" + (String)LoRa_str_Lat + (String)LoRa_str_Overlay + (String)LoRa_str_Lon + (String)LoRa_str_Symbol+(String)LoRa_str_Comment;
     LoRa_send(loRa_str_Bake, 1);
+    l_Timer_Display = millis();
+    display.dim(false);
     LoRa_display("Send Bake",0,20);
   }
 
