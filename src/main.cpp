@@ -3,6 +3,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <TimeLib.h>
 
 String LoRa_incoming_Data;
 
@@ -18,6 +19,11 @@ void LoRa_send(String LoRa_str_Data, int LoRa_i_Header);
 void LoRa_init_display();
 void LoRa_init();
 void LoRa_display(String LoRa_str_display, int LoRa_i_X, int LoRa_i_Y);
+String LoRaNumberFormat(unsigned int number, unsigned int width);
+String LoRaGetTime(time_t t);
+
+static time_t LoRaNextBeacon = 0;
+static time_t LoRaLastBeacon = 0;
 
 void setup() {
   LoRa_init_display();
@@ -28,9 +34,15 @@ void setup() {
   String loRa_str_Bake = (String)LoRa_str_call + ">" + String(LoRa_str_Dest) + ":!" + (String)LoRa_str_Lat + (String)LoRa_str_Overlay + (String)LoRa_str_Lon + (String)LoRa_str_Symbol+(String)LoRa_str_Comment;
   LoRa_send(loRa_str_Bake, 1);
   LoRa_display("Send Bake",0,20);
+  delay(3000);
+  LoRaLastBeacon = now();
 }
 
 void loop() {
+  LoRaNextBeacon =   (LoRa_Timer_Bake*60) - (now() -LoRaLastBeacon);
+
+  LoRa_display("Next Bake : "+LoRaGetTime(LoRaNextBeacon),0,20);
+ 
   if (millis() > l_Timer_Bake_Send + l_Timer_Bake ) {
     l_Timer_Bake = millis();
     
@@ -39,6 +51,8 @@ void loop() {
     l_Timer_Display = millis();
     display.dim(false);
     LoRa_display("Send Bake",0,20);
+    delay(3000);
+    LoRaLastBeacon = now();
   }
 
   if (millis() > l_Timer_Display_off + l_Timer_Display ) {
@@ -203,9 +217,11 @@ void loop() {
       for (i = 0; i < n_digis; i++)
           digiPath = digiPath + "," + digis[i];
 
-      LoRa_display(String(sourceCall + " repeated!"), 0, 20);
+      
       LoRa_incoming_Data = LoRaHeader + sourceCall + ">" + destCall + digiPath + ":" + message;
       LoRa_send(LoRa_incoming_Data,0);
+      LoRa_display(String(sourceCall + " repeated!"), 0, 20);
+      delay(3000);
 
 bad_packet:
       // ignore bad packet
@@ -258,9 +274,9 @@ void LoRa_display(String LoRa_str_display, int LoRa_i_X, int LoRa_i_Y) {
   display.clearDisplay();
   display.setTextColor(WHITE);
   display.setTextSize(1);
-  display.setCursor(0,0);
+  display.setCursor(0,10);
   display.println(LoRa_str_startup);
-  display.setCursor(LoRa_i_X,LoRa_i_Y);
+  display.setCursor(LoRa_i_X,LoRa_i_Y+10);
   display.print(LoRa_str_display);
   display.display();  
 }
@@ -279,4 +295,29 @@ void LoRa_init_display() {
   display.clearDisplay();
   LoRa_display(LoRa_str_display_ok,0,20);
   delay(3000);   
+}
+
+String LoRaGetTime(time_t t)
+{
+	if(t == -1)
+	{
+		return String("00:00:00");
+	}
+	return String(LoRaNumberFormat(hour(t), 2) + "." + LoRaNumberFormat(minute(t), 2) + "." + LoRaNumberFormat(second(t), 2));
+}
+
+String LoRaNumberFormat(unsigned int number, unsigned int width)
+{
+	String result;
+	String num(number);
+	if(num.length() > width)
+	{
+		width = num.length();
+	}
+	for(unsigned int i = 0; i < width - num.length(); i++)
+	{
+		result.concat('0');
+	}
+	result.concat(num);
+	return result;
 }
