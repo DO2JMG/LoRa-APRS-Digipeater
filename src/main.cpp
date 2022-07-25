@@ -4,6 +4,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <TimeLib.h>
+#include <esp_task_wdt.h>
 
 String LoRa_incoming_Data;
 
@@ -26,12 +27,17 @@ static time_t LoRaNextBeacon = 0;
 static time_t LoRaLastBeacon = 0;
 
 void setup() {
+  esp_task_wdt_init(LoRa_Watchdog_Timeout, true);     //enable panic so ESP32 restarts
+  esp_task_wdt_add(NULL);                             //add current thread to WDT watch
+
   LoRa_init_display();
   LoRa_init();
 
   Serial.begin(LoRa_Serial_Baudrate);
 
-  String loRa_str_Bake = (String)LoRa_str_call + ">" + String(LoRa_str_Dest) + ":!" + (String)LoRa_str_Lat + (String)LoRa_str_Overlay + (String)LoRa_str_Lon + (String)LoRa_str_Symbol+(String)LoRa_str_Comment;
+  esp_task_wdt_reset();
+
+  String loRa_str_Bake = (String)LoRa_str_call + ">" + String(LoRa_str_Dest) + ":!" + (String)LoRa_str_Lat + (String)LoRa_str_Overlay + (String)LoRa_str_Lon + (String)LoRa_str_Symbol + (String)LoRa_str_Comment;
   LoRa_send(loRa_str_Bake, 1);
   LoRa_display("Send Bake",0,20);
   delay(3000);
@@ -221,7 +227,7 @@ void loop() {
       LoRa_incoming_Data = LoRaHeader + sourceCall + ">" + destCall + digiPath + ":" + message;
       LoRa_send(LoRa_incoming_Data,0);
       LoRa_display(String(sourceCall + " repeated!"), 0, 20);
-      delay(3000);
+      delay(2000);
 
 bad_packet:
       // ignore bad packet
@@ -235,6 +241,7 @@ already_repeated:
 
     }
   }
+  esp_task_wdt_reset();
 }
 
 void LoRa_send(String LoRa_str_Data, int LoRa_i_Header) {
@@ -278,6 +285,9 @@ void LoRa_display(String LoRa_str_display, int LoRa_i_X, int LoRa_i_Y) {
   display.println(LoRa_str_startup);
   display.setCursor(LoRa_i_X,LoRa_i_Y+10);
   display.print(LoRa_str_display);
+  display.setTextSize(1);
+  display.setCursor(0,50);
+  display.println(LoRa_str_call);
   display.display();  
 }
 
