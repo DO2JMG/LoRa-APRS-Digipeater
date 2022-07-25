@@ -33,12 +33,15 @@
 #define LoRa_str_Symbol "&"                           // Symbol
 #define LoRa_str_Overlay "L"                          // Overlay
 #define LoRa_str_Comment "LoRa Digipeater"            // Comment
-#define LoRa_str_Dest "APZAVR"                        // Destination Call
+#define LoRa_str_Dest "APRJMG"                        // Destination Call
 #define LoRa_Timer_Bake 45                            // Baken Timer in Minutes
 
 #define LoRa_Serial_Baudrate 9600
+
+#define LoRa_Watchdog_Timeout 10
 
 #define LoRa_str_failed "Starting LoRa failed!"
 #define LoRa_str_ok "LoRa Initializing OK"
 #define LoRa_str_display_ok "LoRa Display OK"
 #define LoRa_str_startup "LoRa APRS Digipeater"
+
